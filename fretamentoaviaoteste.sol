@@ -77,9 +77,25 @@ contract FreteAviao {
         
     }
    
+   function comparacaoStrings (string memory a, string memory b) pure public returns (bool) {
+        if(bytes(a).length != bytes(b).length) {
+        return false;
+        } 
+        else {
+            if (keccak256(bytes(a)) == keccak256(bytes(b))){
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+   }
+        
+   
+   
    function estornoIndividual (string memory nomeClienteEstorno) somenteCompanhiaAerea public {
        for (uint i=0; i < passageiros.length; i++){
-            if (keccak256(nomeClienteEstorno) == keccak256(passageiros[i].nomePassageiro)) {
+            if (comparacaoStrings (nomeClienteEstorno, passageiros[i].nomePassageiro)) {
                 if (passageiros[i].estornoParaAgencia) {
                 address payable carteiraDeEstorno = passageiros[i].carteiraAgencia;
                carteiraDeEstorno.transfer(valorPassagem);
@@ -91,9 +107,5 @@ contract FreteAviao {
                 carteiraDeEstorno.transfer(valorPassagem);
                 }    
             }
-            
-       
-       
-       
    }  
 }
