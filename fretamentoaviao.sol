@@ -18,6 +18,7 @@ contract FreteAviao {
         require (msg.sender == carteiraCompanhiaAerea, "Função exclusiva da Companhia Aérea.");
     _;}
     
+   
     constructor (
         uint _limiteAviao,  
         uint _valorPassagem,
@@ -51,11 +52,25 @@ contract FreteAviao {
            string memory passageiroQueChegou = passageiros[i].nomePassageiro;
            address carteiraDaAgenciaQueChegou = passageiros[i].carteiraAgencia;
             emit pousoEfetuadoComSucesso ("Pouso realizado com sucesso.", passageiroQueChegou, carteiraDaAgenciaQueChegou);
+            
         }
+        
+        carteiraCompanhiaAerea.transfer(address(this).balance);
         
         
     }
     
+    function estorno () somenteCompanhiaAerea public {
         
-}
+        for (uint i=0; i < passageiros.length; i++){
+            if (passageiros[i].estornoParaAgencia) {
+                address payable carteiraDeEstorno = passageiros[i].carteiraAgencia;
+               carteiraDeEstorno.transfer(valorPassagem);
+            }
+            address payable carteiraDeEstorno = passageiros[i].carteiraCliente;
+            carteiraDeEstorno.transfer(valorPassagem);
+        }
+        
+    }
     
+}
