@@ -28,7 +28,7 @@ contract FreteAviao {
         ) public {
         limiteAviao = _limiteAviao;
         valorPassagem = _valorPassagem;
-        dataEncerramentoVendas = _dataEncerramentoVendas;
+        dataEncerramentoVendas = now + _dataEncerramentoVendas;
         carteiraCompanhiaAerea = _carteiraCompanhiaAerea;
         }
         
