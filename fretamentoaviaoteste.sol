@@ -21,13 +21,11 @@ contract FreteAviao {
     event pousoEfetuadoComSucesso (string aviso, string nomePassageiro, address carteiraAgencia);
     event eventoEstornoRealizado (string nomePassageiro, address carteiraEstorno, uint valorEstorno);
     
-    
     modifier somenteCompanhiaAerea(){
         require (msg.sender == carteiraCompanhiaAerea, "Função exclusiva da Companhia Aérea.");
         _;
     }
     
-   
     constructor (
         uint _limiteAviao,  
         uint _valorPassagem,
@@ -68,8 +66,6 @@ contract FreteAviao {
         pousoRealizado = true;
         
         carteiraCompanhiaAerea.transfer(address(this).balance);
-        
-        
     }
     
     function cancelamentoEEstornoDeTodos () somenteCompanhiaAerea public {
@@ -81,7 +77,6 @@ contract FreteAviao {
                 carteiraDeEstorno.transfer(valorPassagem);
                 emit eventoEstornoRealizado (passageiros[i].nomePassageiro, carteiraDeEstorno, valorPassagem);
             }
-            
             else {
                 require (!passageiros[i].estornoRealizado);
                 address payable carteiraDeEstorno = passageiros[i].carteiraCliente;
@@ -107,8 +102,6 @@ contract FreteAviao {
             }
         }
    }
-        
-   
    
    function estornoIndividual (string memory nomeClienteEstorno) somenteCompanhiaAerea public {
        for (uint i=0; i < passageiros.length; i++){
@@ -119,8 +112,6 @@ contract FreteAviao {
                     carteiraDeEstorno.transfer(valorPassagem);
                     emit eventoEstornoRealizado (passageiros[i].nomePassageiro, carteiraDeEstorno, valorPassagem);
                 }
-                
-            
                 else {
                     require (!passageiros[i].estornoRealizado);
                     address payable carteiraDeEstorno = passageiros[i].carteiraCliente;
