@@ -5,11 +5,17 @@ contract FreteAviao {
     uint public limiteAviao;
     uint public valorPassagem;
     uint public dataEncerramentoVendas;
+    
     address payable public carteiraCompanhiaAerea;
+   
     struct passagem {string nomePassageiro; address payable carteiraCliente; address payable carteiraAgencia; bool estornoParaAgencia; bool estornoRealizado;}
     passagem[] public passageiros;
+    
     mapping(address => passagem) public passageirosPorAgencia;
     mapping(string => passagem) public mapeamentoReservaPorNome;
+    
+    bool pousoRealizado;
+    bool vooCancelado;
     
     event reservaEfetuada (string aviso, string nomePassageiro, address carteiraAgencia);
     event pousoEfetuadoComSucesso (string aviso, string nomePassageiro, address carteiraAgencia);
@@ -18,7 +24,8 @@ contract FreteAviao {
     
     modifier somenteCompanhiaAerea(){
         require (msg.sender == carteiraCompanhiaAerea, "Função exclusiva da Companhia Aérea.");
-    _;}
+        _;
+    }
     
    
     constructor (
@@ -36,6 +43,7 @@ contract FreteAviao {
         require (now < dataEncerramentoVendas, "Período de compras encerrado.");
         require (msg.value == valorPassagem, "Incorreto o valor da passagem.");
         require (passageiros.length < limiteAviao, "Não há passagens disponíveis.");
+        require (!vooCancelado, "Voo cancelado.");
         
         address payable carteiraAgencia = msg.sender;
         
@@ -48,7 +56,8 @@ contract FreteAviao {
     } 
         
     function pousoSeguro () somenteCompanhiaAerea public {
-        require (now > dataEncerramentoVendas, "Vôo ainda não saiu.");
+        require (now > dataEncerramentoVendas, "Voo ainda não saiu.");
+        require (!vooCancelado, "Voo cancelado.");
         
         for (uint i=0; i < passageiros.length; i++){
             string memory passageiroQueChegou = passageiros[i].nomePassageiro;
@@ -56,14 +65,15 @@ contract FreteAviao {
             emit pousoEfetuadoComSucesso ("Pouso realizado com sucesso.", passageiroQueChegou, carteiraDaAgenciaQueChegou);
             
         }
+        pousoRealizado = true;
         
         carteiraCompanhiaAerea.transfer(address(this).balance);
         
         
     }
     
-    function estornoDeTodos () somenteCompanhiaAerea public {
-        
+    function cancelamentoEEstornoDeTodos () somenteCompanhiaAerea public {
+        require (!pousoRealizado, "Voo já realizado.");
         for (uint i=0; i < passageiros.length; i++){
             if (passageiros[i].estornoParaAgencia) {
                 require (!passageiros[i].estornoRealizado);
@@ -81,7 +91,7 @@ contract FreteAviao {
             passageiros[i].estornoRealizado = true;
             
         }
-        
+        vooCancelado = true;
     }
    
    function comparacaoStrings (string memory a, string memory b) pure public returns (bool) {
