@@ -6,13 +6,14 @@ contract FreteAviao {
     uint public valorPassagem;
     uint public dataEncerramentoVendas;
     address payable public carteiraCompanhiaAerea;
-    struct passagem {string nomePassageiro; address payable carteiraCliente; address payable carteiraAgencia; bool estornoParaAgencia;}
+    struct passagem {string nomePassageiro; address payable carteiraCliente; address payable carteiraAgencia; bool estornoParaAgencia; bool estornoRealizado;}
     passagem[] public passageiros;
     mapping(address => passagem) public passageirosPorAgencia;
     mapping(string => passagem) public mapeamentoReservaPorNome;
     
     event reservaEfetuada (string aviso, string nomePassageiro, address carteiraAgencia);
-    event pousoEfetuadoComSucesso (string aviso, string nnomePassageiro, address carteiraAgencia);
+    event pousoEfetuadoComSucesso (string aviso, string nomePassageiro, address carteiraAgencia);
+    event eventoEstornoRealizado (string nomePassageiro, address carteiraEstorno, uint valorEstorno);
     
     
     modifier somenteCompanhiaAerea(){
@@ -39,7 +40,7 @@ contract FreteAviao {
         
         address payable carteiraAgencia = msg.sender;
         
-        passagem memory passagemReservada = passagem (nomePassageiro, carteiraCliente, carteiraAgencia, estornoParaAgencia);
+        passagem memory passagemReservada = passagem (nomePassageiro, carteiraCliente, carteiraAgencia, estornoParaAgencia, false);
         passageiros.push(passagemReservada);
         passageirosPorAgencia[carteiraAgencia] = passagemReservada;
         
@@ -65,14 +66,20 @@ contract FreteAviao {
         
         for (uint i=0; i < passageiros.length; i++){
             if (passageiros[i].estornoParaAgencia) {
+                require (!passageiros[i].estornoRealizado);
                 address payable carteiraDeEstorno = passageiros[i].carteiraAgencia;
                carteiraDeEstorno.transfer(valorPassagem);
+               emit eventoEstornoRealizado (passageiros[i].nomePassageiro, carteiraDeEstorno, valorPassagem);
             }
             
             else {
+                require (!passageiros[i].estornoRealizado);
                 address payable carteiraDeEstorno = passageiros[i].carteiraCliente;
                 carteiraDeEstorno.transfer(valorPassagem);
-            }    
+                emit eventoEstornoRealizado (passageiros[i].nomePassageiro, carteiraDeEstorno, valorPassagem);
+            } 
+            passageiros[i].estornoRealizado = true;
+            
         }
         
     }
@@ -97,15 +104,21 @@ contract FreteAviao {
        for (uint i=0; i < passageiros.length; i++){
             if (comparacaoStrings (nomeClienteEstorno, passageiros[i].nomePassageiro)) {
                 if (passageiros[i].estornoParaAgencia) {
-                address payable carteiraDeEstorno = passageiros[i].carteiraAgencia;
-               carteiraDeEstorno.transfer(valorPassagem);
+                    require (!passageiros[i].estornoRealizado);
+                    address payable carteiraDeEstorno = passageiros[i].carteiraAgencia;
+                    carteiraDeEstorno.transfer(valorPassagem);
+                    emit eventoEstornoRealizado (passageiros[i].nomePassageiro, carteiraDeEstorno, valorPassagem);
                 }
-            }    
+                
             
                 else {
-                address payable carteiraDeEstorno = passageiros[i].carteiraCliente;
-                carteiraDeEstorno.transfer(valorPassagem);
-                }    
-            }
+                    require (!passageiros[i].estornoRealizado);
+                    address payable carteiraDeEstorno = passageiros[i].carteiraCliente;
+                    carteiraDeEstorno.transfer(valorPassagem);
+                    emit eventoEstornoRealizado (passageiros[i].nomePassageiro, carteiraDeEstorno, valorPassagem);
+                }
+                passageiros[i].estornoRealizado = true; 
+            }    
+        }
    }  
 }
