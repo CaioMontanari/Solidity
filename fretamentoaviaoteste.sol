@@ -25,13 +25,12 @@ contract FreteAviao {
         uint _limiteAviao,  
         uint _valorPassagem,
         uint _dataEncerramentoVendas,
-        address payable _carteiraCompanhiaAerea
-        ) public {
+        address payable _carteiraCompanhiaAerea) public {
         limiteAviao = _limiteAviao;
         valorPassagem = _valorPassagem;
         dataEncerramentoVendas = now + _dataEncerramentoVendas;
         carteiraCompanhiaAerea = _carteiraCompanhiaAerea;
-        }
+    }
         
     function reserva (string memory nomePassageiro, address payable carteiraCliente, bool estornoParaAgencia) public payable {
         require (now < dataEncerramentoVendas, "Período de compras encerrado.");
@@ -43,6 +42,7 @@ contract FreteAviao {
         passagem memory passagemReservada = passagem (nomePassageiro, carteiraCliente, carteiraAgencia, estornoParaAgencia, false);
         passageiros.push(passagemReservada);
         passageirosPorAgencia[carteiraAgencia] = passagemReservada;
+        mapeamentoReservaPorNome[nomePassageiro] = passagemReservada;
         
         emit reservaEfetuada ("Reserva efetuada com sucesso.", nomePassageiro, carteiraAgencia);
     } 
@@ -51,8 +51,8 @@ contract FreteAviao {
         require (now > dataEncerramentoVendas, "Vôo ainda não saiu.");
         
         for (uint i=0; i < passageiros.length; i++){
-           string memory passageiroQueChegou = passageiros[i].nomePassageiro;
-           address carteiraDaAgenciaQueChegou = passageiros[i].carteiraAgencia;
+            string memory passageiroQueChegou = passageiros[i].nomePassageiro;
+            address carteiraDaAgenciaQueChegou = passageiros[i].carteiraAgencia;
             emit pousoEfetuadoComSucesso ("Pouso realizado com sucesso.", passageiroQueChegou, carteiraDaAgenciaQueChegou);
             
         }
@@ -68,8 +68,8 @@ contract FreteAviao {
             if (passageiros[i].estornoParaAgencia) {
                 require (!passageiros[i].estornoRealizado);
                 address payable carteiraDeEstorno = passageiros[i].carteiraAgencia;
-               carteiraDeEstorno.transfer(valorPassagem);
-               emit eventoEstornoRealizado (passageiros[i].nomePassageiro, carteiraDeEstorno, valorPassagem);
+                carteiraDeEstorno.transfer(valorPassagem);
+                emit eventoEstornoRealizado (passageiros[i].nomePassageiro, carteiraDeEstorno, valorPassagem);
             }
             
             else {
