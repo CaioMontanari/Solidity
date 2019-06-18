@@ -36,7 +36,7 @@ contract FreteAviao {
         dataEncerramentoVendas = now + _dataEncerramentoVendas;
         carteiraCompanhiaAerea = _carteiraCompanhiaAerea;
     }
-        
+    
     function reserva (string memory nomePassageiro, address payable carteiraCliente, bool estornoParaAgencia) public payable {
         require (now < dataEncerramentoVendas, "Período de compras encerrado.");
         require (msg.value == valorPassagem, "Incorreto o valor da passagem.");
@@ -52,6 +52,11 @@ contract FreteAviao {
         
         emit reservaEfetuada ("Reserva efetuada com sucesso.", nomePassageiro, carteiraAgencia);
     } 
+        
+     function verificarCadeirasSobrando() somenteCompanhiaAerea public view returns (uint) {
+        uint cadeirasRestantes = limiteAviao-passageiros.length;
+        return cadeirasRestantes;
+    }
         
     function pousoSeguro () somenteCompanhiaAerea public {
         require (now > dataEncerramentoVendas, "Voo ainda não saiu.");
