@@ -53,7 +53,7 @@ contract FreteAviao {
         emit reservaEfetuada ("Reserva efetuada com sucesso.", nomePassageiro, carteiraAgencia);
     } 
         
-     function verificarCadeirasSobrando() somenteCompanhiaAerea public view returns (uint) {
+     function verificarCadeirasSobrando() public view returns (uint) {
         uint cadeirasRestantes = limiteAviao-passageiros.length;
         return cadeirasRestantes;
     }
